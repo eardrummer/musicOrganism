@@ -10,6 +10,9 @@ let startFlag = false;
 let randomVar = 2;
 let audioContextStartFrame = -1;
 
+let backgroundMode = 0, bgImg;
+let mlFont, font;
+
 
 // Blob Stuff
 const points = 100;
@@ -22,10 +25,10 @@ function preload(){
   theShader = loadShader('shader.vert', 'shader.frag');
 	shifter = new Tone.PitchShift(2).toMaster();
 	player = new Tone.Player('data/lidSample.mp3').connect(shifter);
+	//player = new Tone.Player('data/children_sample.wav').connect(shifter);
 
-	leadSampler = new Tone.Sampler({
-		"C4":'data/leadSample.wav'
-	}).toMaster();
+  mlFont = loadFont('data/mlFont.otf');
+  font = loadFont('data/dancingFont.otf');
 
 }
 
@@ -35,11 +38,14 @@ function setup() {
 
 	getAudioContext().suspend();
 
+  textFont(mlFont);
+
 	button = createButton("Enter");
 	button.position(w/2, h/2);
 
 	shaderGraphics = createGraphics(width/2.5, height/2.5, WEBGL);
 	shaderGraphics.noStroke();
+	//setAttributes('perPixelLighting', false);
 
 	// Blob Stuff
 
@@ -98,9 +104,13 @@ function draw() {
 	button.mousePressed(start);
 
 	if(startFlag == false){
+    textSize(42);
+    fill(200,200,0);
+    text("Raise your AI Musical Pet repsonsibly.", width*0.32, height*0.4)
 		return;
 	}
 	else{
+    textFont(font);
 		if(frameCount < audioContextStartFrame + 100){
 			return;
 		}
@@ -111,7 +121,6 @@ function draw() {
 
 
 	vol = mic.getLevel();
-	console.log(blob.state);
 
 	if(vol < 0.008){
 		blob.tN.r = 0.5;
@@ -122,7 +131,10 @@ function draw() {
 
 		}
 
-		shifter.pitch = 12*sin((frameCount + 500)/100)*sin(frameCount/10) - 12*sin((frameCount + 1000)/2000);
+		if(blob.state == 2){
+			shifter.pitch = 12*sin((frameCount + 500)/100)*sin(frameCount/10) - 12*sin((frameCount + 1000)/2000);
+		}
+
 
 
 	}
@@ -141,10 +153,52 @@ function draw() {
 
 	}
 
+
+	if(backgroundMode == 0){
+
+		//tint(100);
+		//image(bgImg, 0, 0, width, height);
+
+	}else if(backgroundMode == 1){
+
+		fill(100,0,0,100);
+		rect(0,0,width,height);
+
+	}
+	else if(backgroundMode == 2){
+
+		fill(0,0,100,100);
+		rect(0,0,width,height);
+	}
+	else{
+		backgroundMode = 0;
+	}
+
 	// Blob Stuff:
 
 	blob.update();
 	blob.show();
+
+  textSize(36);
+  fill(255);
+  if(blob.state == 0){
+    text('Make a sound', width*0.1,height*0.1);
+  }
+  if(blob.state == 1){
+    fill(255);
+    text("You scared it!", width*0.1, height*0.1);
+    fill(100,100,0);
+    text("Don't be afraid, you can come out!", width*0.6, height*0.9);
+  }
+
+  if(blob.state == 2 && frameCount < blob.frameAtStateChange + 500){
+    fill(0,200,0);
+    text("You can have a conversation now", width * 0.1, height*0.1);
+
+    fill(255);
+    text("Press Space Bar to explore different sound worlds with your pet", width*0.1, height*0.9);
+  }
+
 
 }
 
@@ -153,6 +207,31 @@ function mousePressed(){
 	getAudioContext().resume();
 	if(startFlag){
 		//player.start();
+	}
+}
+
+
+function keyPressed(){
+	if(blob.state == 2){
+		if(keyCode == 32){
+			backgroundMode++;
+
+			if (backgroundMode == 0) {
+				player = new Tone.Player('data/lidSample.mp3').connect(shifter);
+			}
+			else if(backgroundMode == 1){
+				player = new Tone.Player('data/children_sample.wav').connect(shifter);
+			}
+			else if(backgroundMode == 2){
+				player = new Tone.Player('data/chennai_streetDrums_short.wav').connect(shifter);
+			}
+			else{
+				player = new Tone.Player('data/lidSample.mp3').connect(shifter);
+			}
+		}
+		else if(keyCode == 13){
+			player.mute = true;
+		}
 	}
 }
 
