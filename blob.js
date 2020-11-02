@@ -18,6 +18,7 @@ class Blob{
 
 		this.state = 0; // 0 = on its own, 1 = shy mode, 2 = responsive mode
 		this.frameAtStateChange;
+		this.frameAtFinalState;
 
 		this.shyCounter = 0;
 	}
@@ -112,7 +113,7 @@ class Blob{
 
 	move(x,y){
 		this.velocity = createVector(x,y).sub(this.position);
-		this.velocity.setMag(10);
+		this.velocity.setMag(20);
 	}
 
 	hide(){
@@ -129,6 +130,7 @@ class Blob{
 
 			this.state = 2;
 			this.color = color(150,100,200,150);
+			this.frameAtFinalState = frameCount;
 
 			return;
 		}
